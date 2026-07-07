@@ -21,12 +21,21 @@ class AlienInvasion:
         """初始化游戏并创建游戏资源."""
         pygame.init()
 
+        # 禁用 IME 文本输入，防止输入法拦截按键事件
+        pygame.key.stop_text_input()
+
         self.clock = pygame.time.Clock()
         self.settings = Settings()
 
         # 创建游戏窗口
-        self.screen = pygame.display.set_mode(
-            (self.settings.screen_width, self.settings.screen_height))
+        if self.settings.fullscreen:
+            self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+            # 全屏模式下，用实际屏幕尺寸更新配置
+            self.settings.screen_width = self.screen.get_rect().width
+            self.settings.screen_height = self.screen.get_rect().height
+        else:
+            self.screen = pygame.display.set_mode(
+                (self.settings.screen_width, self.settings.screen_height))
         pygame.display.set_caption("外星人入侵")
 
         # 创建游戏状态和记分牌
@@ -68,6 +77,7 @@ class AlienInvasion:
         """响应按键和鼠标事件."""
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                pygame.quit()
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
                 self._check_keydown_events(event)
@@ -83,7 +93,8 @@ class AlienInvasion:
             self.ship.moving_right = True
         elif event.key == pygame.K_LEFT:
             self.ship.moving_left = True
-        elif event.key == pygame.K_q:
+        elif event.key == pygame.K_q or event.scancode == 20:
+            pygame.quit()
             sys.exit()
         elif event.key == pygame.K_SPACE:
             self._fire_bullet()
